@@ -1,6 +1,7 @@
 package com.platzi.play.persistence;
 
 import com.platzi.play.domain.dto.MovieDto;
+import com.platzi.play.domain.dto.UpdateMovieDto;
 import com.platzi.play.domain.repository.MovieRepository;
 import com.platzi.play.persistence.crud.CrudMovieEntity;
 import com.platzi.play.persistence.entity.MovieEntity;
@@ -36,5 +37,20 @@ public class MovieEntityRepository implements MovieRepository {
         movieEntity.setEstado("D");
 
         return this.movieMapper.toDto(this.crudMovieEntity.save(movieEntity));
+    }
+
+    @Override
+    public MovieDto update(long id, UpdateMovieDto updateMovieDto) {
+        MovieEntity movieEntity = this.crudMovieEntity.findById(id).orElse(null);
+
+        if (movieEntity == null) return null;
+
+        this.movieMapper.updateEntityFromDto(updateMovieDto, movieEntity);
+        return this.movieMapper.toDto(this.crudMovieEntity.save(movieEntity));
+    }
+
+    @Override
+    public void delete(long id) {
+        this.crudMovieEntity.deleteById(id);
     }
 }

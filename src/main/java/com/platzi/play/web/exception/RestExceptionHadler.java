@@ -1,9 +1,12 @@
 package com.platzi.play.web.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.platzi.play.domain.Genre;
 import com.platzi.play.domain.exception.MovieAlreadyExistsException;
 import com.platzi.play.domain.exception.MovieNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -34,6 +37,32 @@ public class RestExceptionHadler {
         });
 
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Error> handleException(HttpMessageNotReadableException e) {
+        String type = "format-validation-error";
+        String message = "Ha ocurrido un error en el formato de los datos enviados.";
+
+        if (e.getCause() instanceof InvalidFormatException cause && cause.getTargetType() == Genre.class) {
+            type = "genre-not-found";
+            message = "El género enviado no es válido. Por favor, verifique los valores permitidos.";
+        }
+
+        if (e.getCause() instanceof InvalidFormatException cause && cause.getTargetType() == Integer.class) {
+            type = "duration-invalid-format";
+            message = "La duracion enviada no es válida. Por favor, especifique un valor valido.";
+        }
+
+        if (e.getCause() instanceof InvalidFormatException cause && cause.getTargetType() == Double.class) {
+            type = "rating-invalid-format";
+            message = "La clasificacion enviada no es válida. Por favor, especifique un valor valido.";
+        }
+
+
+
+        Error error = new Error(type, message);
+        return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(Exception.class)
